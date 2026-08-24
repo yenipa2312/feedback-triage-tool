@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <h1>Feedback Dashboard</h1>
+      <p>Everything submitted by the team, grouped by theme once analyzed.</p>
+    </header>
+
+    <section class="toolbar">
+      <div class="toolbar-left">
+        <button id="analyze-btn" class="primary">Analyze New Feedback</button>
+        <button id="refresh-btn" class="secondary">Refresh</button>
+      </div>
+      <div class="toolbar-right">
+        <label class="checkbox-label">
+          <input type="checkbox" id="show-synced" />
+          Show items already synced to backlog
+        </label>
+        <button id="export-csv-btn" class="secondary">Export CSV</button>
+        <button id="export-md-btn" class="secondary">Export Markdown</button>
+      </div>
+    </section>
+
+    <p id="status" class="status" aria-live="polite"></p>
+
+    <section id="results" class="results">
+      <div class="results-header">
+        <h2>Themes</h2>
+        <div id="summary" class="summary"></div>
+      </div>
+      <div id="theme-groups" class="theme-groups"></div>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

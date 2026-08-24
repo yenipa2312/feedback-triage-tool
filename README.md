@@ -1,48 +1,65 @@
 # Feedback Triage Tool
 
-Paste raw customer feedback, click **Analyze**, and Claude sorts it into themes
-(Bug, Feature Request, Pricing, Praise, ...) with sentiment, grouped into cards.
+Two pages:
+
+- **`index.html`** — the public link you share with your team (call center
+  agents). One open text box, no login. Every submission is stored.
+- **`dashboard.html`** — your view. Click **Analyze New Feedback** to have
+  Claude sort everything into themes (Tooling, Process, Training, Workload,
+  Communication, Compensation, Praise, Other) with sentiment. Check "synced"
+  on items once you've added them to your backlog, and export the rest as
+  CSV or Markdown to paste in.
 
 ## How it works
 
-- `index.html` / `style.css` / `app.js` — static frontend, no build step
-- `netlify/functions/triage.js` — a serverless function that calls the Claude API
-  server-side, so the API key never reaches the browser
-- The API key is read from the `ANTHROPIC_API_KEY` environment variable
+- Storage: [Netlify Blobs](https://docs.netlify.com/blobs/overview/), a
+  built-in key-value store — no external database or account needed. All
+  submissions live in one JSON list.
+- `netlify/functions/submit.js` — agents' form posts here
+- `netlify/functions/list.js` — dashboard reads all stored items
+- `netlify/functions/analyze.js` — calls Claude on items with no theme yet,
+  saves the result back to storage
+- `netlify/functions/update-status.js` — flips the "synced to backlog" flag
+  on one item
+- The Anthropic API key is read from the `ANTHROPIC_API_KEY` environment
+  variable, only server-side — it never reaches the browser.
+
+**Known limitation:** storage uses a single JSON blob updated on every
+submit, so two agents submitting in the exact same instant could
+theoretically overwrite each other. Fine for occasional internal feedback;
+not built for high concurrent traffic.
 
 ## Local setup
 
-1. Install [Node.js](https://nodejs.org) (LTS version) if you haven't already.
-2. Install the Netlify CLI globally:
+1. Install [Node.js](https://nodejs.org) (LTS) if you haven't already.
+2. Install dependencies and the Netlify CLI:
    ```
+   npm install
    npm install -g netlify-cli
    ```
 3. Copy `.env.example` to `.env` and paste in your own Anthropic API key
-   (get one at https://console.anthropic.com/). `.env` is gitignored, so it
-   never gets committed.
+   (get one at https://console.anthropic.com/). `.env` is gitignored.
 4. Run the dev server:
    ```
    netlify dev
    ```
-5. Open the URL it prints (usually `http://localhost:8888`) and try it out.
+5. Open the printed URL (usually `http://localhost:8888`) for the
+   submission form, and `http://localhost:8888/dashboard.html` for your
+   dashboard. Netlify CLI emulates Blobs locally too, so everything works
+   the same as production.
 
 ## Deploying to Netlify
 
-1. Push this folder to a GitHub repository.
-2. In the Netlify dashboard: **Add new site → Import an existing project → GitHub**,
-   and pick this repo.
-3. Build settings: publish directory `.`, functions directory `netlify/functions`
-   (already configured in `netlify.toml`, so the defaults should just work).
-4. Before the first deploy (or right after), go to
-   **Site settings → Environment variables** and add:
-   - Key: `ANTHROPIC_API_KEY`
-   - Value: your Anthropic API key
-5. Deploy. Netlify gives you a live URL you can share with your team.
+1. Push to GitHub, then in Netlify: **Add new site → Import an existing
+   project → GitHub** → pick this repo. Settings auto-detect from
+   `netlify.toml`.
+2. **Site settings → Environment variables** → add `ANTHROPIC_API_KEY`.
+3. Redeploy so the function picks up the key.
+4. Share the site's root URL (`.../`) with agents for submitting feedback,
+   and keep `.../dashboard.html` for yourself.
 
 ## Notes
 
-- Uses `claude-haiku-4-5-20251001` for fast, cheap categorization. You can
-  swap the model name in `netlify/functions/triage.js` for a different Claude
-  model.
-- No npm dependencies are required — the function uses the built-in `fetch`
-  available in Netlify's Node runtime.
+- Uses `claude-haiku-4-5-20251001` for fast, cheap categorization — change
+  the model name in `netlify/functions/analyze.js` if you want a different
+  Claude model.

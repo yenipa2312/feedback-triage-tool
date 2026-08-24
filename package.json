@@ -5,5 +5,8 @@
   "description": "Paste raw customer feedback and let Claude sort it into themes and sentiment.",
   "scripts": {
     "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "latest"
   }
 }
