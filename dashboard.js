@@ -101,6 +101,7 @@ function render() {
         <div class="theme-card stagger-in">
           <h3>${escapeHtml(theme)} <span class="theme-count">${themeItems.length}</span></h3>
           ${rows}
+          ${suggestionsBlock(theme)}
         </div>`;
     })
     .join("");
@@ -110,6 +111,23 @@ function render() {
       toggleSynced(el.dataset.toggleId, e.target.checked);
     });
   });
+}
+
+function suggestionsBlock(theme) {
+  const entry = typeof OPEN_SOURCE_PLAYBOOK !== "undefined" ? OPEN_SOURCE_PLAYBOOK[theme] : null;
+  if (!entry) return "";
+
+  const tips = entry.tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("");
+  const sources = entry.sources
+    .map((s) => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a>`)
+    .join(" &middot; ");
+
+  return `
+    <div class="suggestions">
+      <p class="suggestions-label">Suggestions from research</p>
+      <ul class="suggestions-list">${tips}</ul>
+      <p class="suggestions-sources">${sources}</p>
+    </div>`;
 }
 
 function sentimentBadge(sentiment) {
