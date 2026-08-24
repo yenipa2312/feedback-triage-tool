@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Triage Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <h1>Feedback Triage Tool</h1>
+      <p>Paste raw customer feedback below. Claude will sort it into themes and sentiment so you can spot patterns fast.</p>
+    </header>
+
+    <section class="input-panel">
+      <textarea
+        id="feedback-input"
+        placeholder="Paste feedback here, one item per line. For example:&#10;The mobile app crashes every time I upload a photo&#10;Love the new dashboard, so much faster than before&#10;Wish there was a dark mode&#10;Pricing feels high compared to competitors"
+      ></textarea>
+
+      <div class="controls">
+        <button id="sample-btn" class="secondary">Load sample feedback</button>
+        <button id="analyze-btn" class="primary">Analyze Feedback</button>
+      </div>
+
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section id="results" class="results" hidden>
+      <div class="results-header">
+        <h2>Results</h2>
+        <div id="summary" class="summary"></div>
+      </div>
+      <div id="theme-groups" class="theme-groups"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

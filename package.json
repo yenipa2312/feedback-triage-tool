@@ -1,0 +1,9 @@
+{
+  "name": "feedback-triage-tool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Paste raw customer feedback and let Claude sort it into themes and sentiment.",
+  "scripts": {
+    "dev": "netlify dev"
+  }
+}
