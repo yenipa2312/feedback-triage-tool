@@ -65,8 +65,17 @@ not built for high concurrent traffic.
    project → GitHub** → pick this repo. Settings auto-detect from
    `netlify.toml`.
 2. **Site settings → Environment variables** → add `ANTHROPIC_API_KEY`.
-3. Redeploy so the function picks up the key.
-4. Share the site's root URL (`.../`) with agents for submitting feedback,
+3. **Site configuration → Visitor access** → make sure production isn't
+   password/team-gated, or agents won't be able to open the form at all.
+4. If functions error with `MissingBlobsEnvironmentError` (some sites don't
+   get Netlify's automatic Blobs config injected): create a Personal
+   access token (your Netlify avatar → **User settings → Applications →
+   Personal access tokens → New access token**), find your **Site ID**
+   (**Site configuration → General → Site details**), and add two more
+   environment variables: `NETLIFY_BLOBS_SITE_ID` and `NETLIFY_BLOBS_TOKEN`.
+   `netlify/functions/lib/store.js` uses these automatically if present.
+5. Redeploy so functions pick up the new env vars.
+6. Share the site's root URL (`.../`) with agents for submitting feedback,
    and keep `.../dashboard.html` for yourself.
 
 ## Notes

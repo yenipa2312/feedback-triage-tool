@@ -1,9 +1,9 @@
 // Dashboard endpoint - returns every stored feedback item as-is (analyzed or not).
 
-const { getStore } = require("@netlify/blobs");
+const { feedbackStore } = require("./lib/store");
 
 exports.handler = async () => {
-  const store = getStore("feedback");
+  const store = feedbackStore();
   const items = (await store.get("items", { type: "json" })) || [];
 
   return {

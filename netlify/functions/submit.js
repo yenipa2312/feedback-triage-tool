@@ -2,7 +2,7 @@
 // as a single JSON array under the "feedback" store. No auth: the link is
 // meant to be open, per the team's low-stakes internal use case.
 
-const { getStore } = require("@netlify/blobs");
+const { feedbackStore } = require("./lib/store");
 
 const TENURE_VALUES = new Set([
   "Less than 6 months",
@@ -34,7 +34,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "Please answer what would help most." }) };
   }
 
-  const store = getStore("feedback");
+  const store = feedbackStore();
   const items = (await store.get("items", { type: "json" })) || [];
 
   items.push({

@@ -1,6 +1,6 @@
 // Dashboard endpoint - flips the "synced to backlog" flag on one item.
 
-const { getStore } = require("@netlify/blobs");
+const { feedbackStore } = require("./lib/store");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -18,7 +18,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "id is required" }) };
   }
 
-  const store = getStore("feedback");
+  const store = feedbackStore();
   const items = (await store.get("items", { type: "json" })) || [];
   const updated = items.map((item) => (item.id === id ? { ...item, synced: !!synced } : item));
 

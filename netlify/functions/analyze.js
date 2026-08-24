@@ -2,7 +2,7 @@
 // classify them by theme + sentiment, persists the result, and returns
 // the full updated list.
 
-const { getStore } = require("@netlify/blobs");
+const { feedbackStore } = require("./lib/store");
 
 exports.handler = async () => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -13,7 +13,7 @@ exports.handler = async () => {
     };
   }
 
-  const store = getStore("feedback");
+  const store = feedbackStore();
   const items = (await store.get("items", { type: "json" })) || [];
   const unanalyzed = items.filter((item) => !item.theme);
 
