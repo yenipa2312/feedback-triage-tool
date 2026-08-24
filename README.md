@@ -2,13 +2,24 @@
 
 Two pages:
 
-- **`index.html`** — the public link you share with your team (call center
-  agents). One open text box, no login. Every submission is stored.
+- **`index.html`** — "Your voice is very important for us." The public link
+  you share with agents: optional name, how long they've worked there, where
+  calls give them trouble, and what would help most. No login.
 - **`dashboard.html`** — your view. Click **Analyze New Feedback** to have
   Claude sort everything into themes (Tooling, Process, Training, Workload,
   Communication, Compensation, Praise, Other) with sentiment. Check "synced"
   on items once you've added them to your backlog, and export the rest as
   CSV or Markdown to paste in.
+
+## Design
+
+Built with the `impeccable-design` / `frontend-craft` / `design-tokens` /
+`accessibility-audit` / `emil-design-eng` / `design-taste-frontend` skills:
+a locked slate + burnt-orange OKLCH palette (not the generic "AI dark +
+blue/purple" default), both light and dark mode via `prefers-color-scheme`,
+sentiment shown as text+color badges (never color alone), visible `<label>`
+on every field, and restrained motion tuned for an internal work tool
+(nothing above a ~200ms press/focus transition).
 
 ## How it works
 

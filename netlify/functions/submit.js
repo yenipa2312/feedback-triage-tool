@@ -4,20 +4,34 @@
 
 const { getStore } = require("@netlify/blobs");
 
+const TENURE_VALUES = new Set([
+  "Less than 6 months",
+  "6 months to 1 year",
+  "1 to 3 years",
+  "3 to 5 years",
+  "5+ years",
+]);
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
   }
 
-  let text;
+  let name, tenure, painPoint, wish;
   try {
-    ({ text } = JSON.parse(event.body || "{}"));
+    ({ name, tenure, painPoint, wish } = JSON.parse(event.body || "{}"));
   } catch {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid request body" }) };
   }
 
-  if (!text || typeof text !== "string" || !text.trim()) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Feedback text is required." }) };
+  if (!TENURE_VALUES.has(tenure)) {
+    return { statusCode: 400, body: JSON.stringify({ error: "Please select how long you've been working here." }) };
+  }
+  if (!painPoint || typeof painPoint !== "string" || !painPoint.trim()) {
+    return { statusCode: 400, body: JSON.stringify({ error: "Please answer where the trouble is." }) };
+  }
+  if (!wish || typeof wish !== "string" || !wish.trim()) {
+    return { statusCode: 400, body: JSON.stringify({ error: "Please answer what would help most." }) };
   }
 
   const store = getStore("feedback");
@@ -25,7 +39,10 @@ exports.handler = async (event) => {
 
   items.push({
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    text: text.trim(),
+    name: typeof name === "string" && name.trim() ? name.trim() : null,
+    tenure,
+    painPoint: painPoint.trim(),
+    wish: wish.trim(),
     submittedAt: new Date().toISOString(),
     theme: null,
     sentiment: null,

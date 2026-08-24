@@ -3,31 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Share Your Feedback</title>
+  <title>Your Voice Matters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="app narrow">
-    <header class="app-header">
-      <h1>What would make your work easier?</h1>
+  <main class="page">
+    <header class="page-header">
+      <h1>Your voice is very important for us</h1>
       <p>
-        Tools, process changes, training, anything you wish worked better day to day.
-        Your product manager reads every submission.
+        Three quick questions, about a minute. Your name is optional — we're
+        looking for patterns across the team, not calling anyone out.
       </p>
     </header>
 
-    <section class="input-panel">
-      <textarea
-        id="feedback-input"
-        placeholder="e.g. The call transfer button is hard to find, or I wish we had a faster way to look up customer order history..."
-      ></textarea>
-
-      <div class="controls">
-        <button id="submit-btn" class="primary">Submit Feedback</button>
+    <form class="panel" id="feedback-form">
+      <div class="field">
+        <label class="field-label" for="name">Name</label>
+        <span class="field-hint">Optional — leave it blank if you'd rather stay anonymous.</span>
+        <input type="text" id="name" name="name" autocomplete="name" />
       </div>
 
-      <p id="status" class="status" aria-live="polite"></p>
-    </section>
+      <div class="field">
+        <label class="field-label" for="tenure">How long have you been working in the call center?</label>
+        <select id="tenure" name="tenure" required>
+          <option value="" disabled selected>Select one</option>
+          <option value="Less than 6 months">Less than 6 months</option>
+          <option value="6 months to 1 year">6 months – 1 year</option>
+          <option value="1 to 3 years">1–3 years</option>
+          <option value="3 to 5 years">3–5 years</option>
+          <option value="5+ years">5+ years</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="pain-point">Where do you run into the most trouble while handling a client's call?</label>
+        <textarea
+          id="pain-point"
+          name="painPoint"
+          required
+          placeholder="e.g. Looking up a customer's order history takes too many screens"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="wish">If we could fix one thing, what would make the biggest difference for you?</label>
+        <textarea
+          id="wish"
+          name="wish"
+          required
+          placeholder="e.g. A faster way to transfer calls without losing the customer's context"
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <button type="submit" class="primary" id="submit-btn">Send Feedback</button>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
   </main>
 
   <script src="submit.js"></script>

@@ -29,7 +29,7 @@ async function loadItems() {
     setStatus("");
     render();
   } catch (err) {
-    setStatus(err.message, true);
+    setStatus(err.message, "error");
   }
 }
 
@@ -41,10 +41,10 @@ async function analyzeNew() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Analysis failed.");
     allItems = data.items || [];
-    setStatus("Done.");
+    setStatus("Done.", "success");
     render();
   } catch (err) {
-    setStatus(err.message, true);
+    setStatus(err.message, "error");
   } finally {
     analyzeBtn.disabled = false;
   }
@@ -65,7 +65,7 @@ async function toggleSynced(id, synced) {
     if (item) item.synced = synced;
     render();
   } catch (err) {
-    setStatus(err.message, true);
+    setStatus(err.message, "error");
   }
 }
 
@@ -77,7 +77,7 @@ function render() {
   summaryEl.textContent = `${allItems.length} total · ${unanalyzedCount} not yet analyzed · showing ${visible.length}`;
 
   if (!visible.length) {
-    groupsEl.innerHTML = `<p class="empty">Nothing to show yet.</p>`;
+    groupsEl.innerHTML = `<p class="empty-state">Nothing to show yet.</p>`;
     return;
   }
 
@@ -98,7 +98,7 @@ function render() {
       const rows = sorted.map(itemRow).join("");
 
       return `
-        <div class="theme-card">
+        <div class="theme-card stagger-in">
           <h3>${escapeHtml(theme)} <span class="theme-count">${themeItems.length}</span></h3>
           ${rows}
         </div>`;
@@ -112,16 +112,31 @@ function render() {
   });
 }
 
+function sentimentBadge(sentiment) {
+  if (!sentiment) return "";
+  const cls = sentiment.toLowerCase();
+  return `<span class="badge ${cls}">${escapeHtml(sentiment)}</span>`;
+}
+
 function itemRow(item) {
-  const sentimentClass = (item.sentiment || "neutral").toLowerCase();
   const date = new Date(item.submittedAt).toLocaleDateString();
+  const who = item.name ? escapeHtml(item.name) : "Anonymous";
+
   return `
     <div class="feedback-item">
-      <span class="sentiment-dot sentiment-${sentimentClass}"></span>
-      <span class="feedback-text">${escapeHtml(item.text)}<span class="feedback-date"> — ${date}</span></span>
+      <div class="feedback-item-head">
+        <span class="feedback-who">${who} <span class="feedback-meta">&middot; ${escapeHtml(item.tenure)} &middot; ${date}</span></span>
+        <span>${sentimentBadge(item.sentiment)}</span>
+      </div>
+      <dl class="feedback-body">
+        <dt>Trouble spot</dt>
+        <dd>${escapeHtml(item.painPoint)}</dd>
+        <dt>Would help</dt>
+        <dd>${escapeHtml(item.wish)}</dd>
+      </dl>
       <label class="sync-toggle">
         <input type="checkbox" data-toggle-id="${item.id}" ${item.synced ? "checked" : ""} />
-        synced
+        Synced to backlog
       </label>
     </div>`;
 }
@@ -131,19 +146,22 @@ function exportItems(format) {
   const visible = allItems.filter((i) => showSynced || !i.synced);
 
   if (!visible.length) {
-    setStatus("Nothing to export.", true);
+    setStatus("Nothing to export.", "error");
     return;
   }
 
   let content, mime, filename;
 
   if (format === "csv") {
-    const rows = [["Theme", "Sentiment", "Feedback", "Submitted", "Synced"]];
+    const rows = [["Name", "Tenure", "Theme", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
     for (const item of visible) {
       rows.push([
+        item.name || "Anonymous",
+        item.tenure,
         item.theme || "",
         item.sentiment || "",
-        item.text,
+        item.painPoint,
+        item.wish,
         item.submittedAt,
         item.synced ? "yes" : "no",
       ]);
@@ -162,7 +180,8 @@ function exportItems(format) {
     for (const [theme, items] of Object.entries(themes)) {
       md += `## ${theme}\n\n`;
       for (const item of items) {
-        md += `- (${item.sentiment || "Neutral"}) ${item.text}\n`;
+        const who = item.name || "Anonymous";
+        md += `- **${who}** (${item.tenure}, ${item.sentiment || "Neutral"}) — trouble: ${item.painPoint} | would help: ${item.wish}\n`;
       }
       md += "\n";
     }
@@ -188,9 +207,10 @@ function csvEscape(value) {
   return str;
 }
 
-function setStatus(message, isError = false) {
+function setStatus(message, kind) {
   statusEl.textContent = message;
-  statusEl.classList.toggle("error", isError);
+  statusEl.classList.toggle("error", kind === "error");
+  statusEl.classList.toggle("success", kind === "success");
 }
 
 function escapeHtml(str) {

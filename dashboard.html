@@ -4,36 +4,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feedback Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="app">
-    <header class="app-header">
+  <main class="page wide">
+    <header class="page-header">
       <h1>Feedback Dashboard</h1>
-      <p>Everything submitted by the team, grouped by theme once analyzed.</p>
+      <p>Everything submitted by the team. Analyze to sort into themes, then mark items as synced once they're in your backlog.</p>
     </header>
 
-    <section class="toolbar">
-      <div class="toolbar-left">
+    <div class="toolbar">
+      <div class="toolbar-group">
         <button id="analyze-btn" class="primary">Analyze New Feedback</button>
         <button id="refresh-btn" class="secondary">Refresh</button>
       </div>
-      <div class="toolbar-right">
-        <label class="checkbox-label">
+      <div class="toolbar-group">
+        <label class="checkbox-row">
           <input type="checkbox" id="show-synced" />
-          Show items already synced to backlog
+          Show synced items
         </label>
         <button id="export-csv-btn" class="secondary">Export CSV</button>
         <button id="export-md-btn" class="secondary">Export Markdown</button>
       </div>
-    </section>
+    </div>
 
-    <p id="status" class="status" aria-live="polite"></p>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
 
-    <section id="results" class="results">
-      <div class="results-header">
+    <section>
+      <div class="section-heading">
         <h2>Themes</h2>
-        <div id="summary" class="summary"></div>
+        <div id="summary" class="summary-line"></div>
       </div>
       <div id="theme-groups" class="theme-groups"></div>
     </section>

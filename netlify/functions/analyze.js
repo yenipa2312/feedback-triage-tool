@@ -25,11 +25,15 @@ exports.handler = async () => {
     };
   }
 
-  const listForPrompt = unanalyzed.map((item) => `${item.id}: ${item.text}`).join("\n");
+  const listForPrompt = unanalyzed
+    .map((item) => `${item.id}:\nTrouble spot: ${item.painPoint}\nWould help: ${item.wish}`)
+    .join("\n\n");
 
   const prompt = `You are triaging feedback from call center agents for a product manager.
+Each item has two parts: where they run into trouble on calls, and what
+would help them most. Classify the item as a whole.
 
-For each item below (format is "id: feedback text"), classify:
+For each item below, classify:
 - "theme": one of Tooling, Process, Training, Workload, Communication, Compensation, Praise, Other
 - "sentiment": one of Positive, Neutral, Negative
 

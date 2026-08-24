@@ -1,20 +1,17 @@
-const input = document.getElementById("feedback-input");
+const form = document.getElementById("feedback-form");
 const submitBtn = document.getElementById("submit-btn");
 const statusEl = document.getElementById("status");
 
-submitBtn.addEventListener("click", submitFeedback);
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-    submitFeedback();
-  }
-});
+  const name = form.name.value.trim();
+  const tenure = form.tenure.value;
+  const painPoint = form.painPoint.value.trim();
+  const wish = form.wish.value.trim();
 
-async function submitFeedback() {
-  const text = input.value.trim();
-
-  if (!text) {
-    setStatus("Please write something before submitting.", true);
+  if (!tenure || !painPoint || !wish) {
+    setStatus("Please fill in all three questions before sending.", "error");
     return;
   }
 
@@ -25,7 +22,7 @@ async function submitFeedback() {
     const res = await fetch("/.netlify/functions/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ name, tenure, painPoint, wish }),
     });
 
     const data = await res.json();
@@ -34,16 +31,17 @@ async function submitFeedback() {
       throw new Error(data.error || `Request failed with status ${res.status}`);
     }
 
-    input.value = "";
-    setStatus("Thanks! Your feedback was submitted. Feel free to send more.");
+    form.reset();
+    setStatus("Thanks — your feedback was sent. Feel free to send more anytime.", "success");
   } catch (err) {
-    setStatus(err.message, true);
+    setStatus(err.message, "error");
   } finally {
     submitBtn.disabled = false;
   }
-}
+});
 
-function setStatus(message, isError = false) {
+function setStatus(message, kind) {
   statusEl.textContent = message;
-  statusEl.classList.toggle("error", isError);
+  statusEl.classList.toggle("error", kind === "error");
+  statusEl.classList.toggle("success", kind === "success");
 }
