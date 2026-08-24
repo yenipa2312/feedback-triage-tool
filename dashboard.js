@@ -1,23 +1,33 @@
 const analyzeBtn = document.getElementById("analyze-btn");
 const refreshBtn = document.getElementById("refresh-btn");
 const showSyncedCheckbox = document.getElementById("show-synced");
+const experienceFilter = document.getElementById("experience-filter");
 const exportCsvBtn = document.getElementById("export-csv-btn");
 const exportMdBtn = document.getElementById("export-md-btn");
 const statusEl = document.getElementById("status");
 const summaryEl = document.getElementById("summary");
 const groupsEl = document.getElementById("theme-groups");
+const backlogListEl = document.getElementById("backlog-list");
+const backlogCountEl = document.getElementById("backlog-count");
+const backlogForm = document.getElementById("backlog-form");
+const backlogTitleInput = document.getElementById("backlog-title");
+const backlogDescriptionInput = document.getElementById("backlog-description");
 
 const SENTIMENT_ORDER = { Negative: 0, Neutral: 1, Positive: 2 };
 
 let allItems = [];
+let backlogItems = [];
 
 analyzeBtn.addEventListener("click", analyzeNew);
-refreshBtn.addEventListener("click", loadItems);
+refreshBtn.addEventListener("click", () => { loadItems(); loadBacklog(); });
 showSyncedCheckbox.addEventListener("change", render);
+experienceFilter.addEventListener("change", render);
 exportCsvBtn.addEventListener("click", () => exportItems("csv"));
 exportMdBtn.addEventListener("click", () => exportItems("md"));
+backlogForm.addEventListener("submit", addBacklogItem);
 
 loadItems();
+loadBacklog();
 
 async function loadItems() {
   setStatus("Loading...");
@@ -27,6 +37,67 @@ async function loadItems() {
     if (!res.ok) throw new Error(data.error || "Failed to load feedback.");
     allItems = data.items || [];
     setStatus("");
+    render();
+  } catch (err) {
+    setStatus(err.message, "error");
+  }
+}
+
+async function loadBacklog() {
+  try {
+    const res = await fetch("/.netlify/functions/backlog-list");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to load backlog.");
+    backlogItems = data.items || [];
+    renderBacklog();
+  } catch (err) {
+    setStatus(err.message, "error");
+  }
+}
+
+async function addBacklogItem(e) {
+  e.preventDefault();
+  const title = backlogTitleInput.value.trim();
+  const description = backlogDescriptionInput.value.trim();
+  if (!title) return;
+
+  try {
+    const res = await fetch("/.netlify/functions/backlog-add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, description }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Could not add backlog item.");
+    backlogItems = data.items || [];
+    backlogForm.reset();
+    renderBacklog();
+  } catch (err) {
+    setStatus(err.message, "error");
+  }
+}
+
+async function addSubjectToBacklog(subject, groupItems) {
+  const theme = groupItems[0]?.theme || "Other";
+  const description = `Reported by ${groupItems.length} agent(s), theme: ${theme}. Example: "${groupItems[0].painPoint}"`;
+
+  try {
+    const res = await fetch("/.netlify/functions/backlog-add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: subject, description }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Could not add backlog item.");
+    backlogItems = data.items || [];
+
+    const newId = data.newItem?.id;
+    if (newId) {
+      for (const item of allItems) {
+        if (item.subject === subject) item.backlogMatchId = newId;
+      }
+    }
+    renderBacklog();
     render();
   } catch (err) {
     setStatus(err.message, "error");
@@ -69,9 +140,29 @@ async function toggleSynced(id, synced) {
   }
 }
 
+function renderBacklog() {
+  backlogCountEl.textContent = backlogItems.length;
+  if (!backlogItems.length) {
+    backlogListEl.innerHTML = `<p class="empty-state">Nothing in your backlog yet — add items below, or use "Add to backlog" on an unmatched issue.</p>`;
+    return;
+  }
+  backlogListEl.innerHTML = backlogItems
+    .map(
+      (b) => `
+      <div class="backlog-item">
+        <strong>${escapeHtml(b.title)}</strong>
+        ${b.description ? `<span class="feedback-meta">${escapeHtml(b.description)}</span>` : ""}
+      </div>`
+    )
+    .join("");
+}
+
 function render() {
   const showSynced = showSyncedCheckbox.checked;
-  const visible = allItems.filter((i) => showSynced || !i.synced);
+  const experience = experienceFilter.value;
+  const visible = allItems.filter(
+    (i) => (showSynced || !i.synced) && (!experience || i.tenure === experience)
+  );
   const unanalyzedCount = allItems.filter((i) => !i.theme).length;
 
   summaryEl.textContent = `${allItems.length} total · ${unanalyzedCount} not yet analyzed · showing ${visible.length}`;
@@ -92,15 +183,10 @@ function render() {
 
   groupsEl.innerHTML = sortedThemes
     .map(([theme, themeItems]) => {
-      const sorted = [...themeItems].sort(
-        (a, b) => (SENTIMENT_ORDER[a.sentiment] ?? 1) - (SENTIMENT_ORDER[b.sentiment] ?? 1)
-      );
-      const rows = sorted.map(itemRow).join("");
-
       return `
         <div class="theme-card stagger-in">
           <h3>${escapeHtml(theme)} <span class="theme-count">${themeItems.length}</span></h3>
-          ${rows}
+          ${subjectGroups(theme, themeItems)}
           ${suggestionsBlock(theme)}
         </div>`;
     })
@@ -111,6 +197,57 @@ function render() {
       toggleSynced(el.dataset.toggleId, e.target.checked);
     });
   });
+
+  groupsEl.querySelectorAll("[data-add-subject]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const subject = el.dataset.addSubject;
+      const groupItems = visible.filter((i) => (i.subject || null) === subject);
+      addSubjectToBacklog(subject, groupItems);
+    });
+  });
+}
+
+function subjectGroups(theme, themeItems) {
+  const groups = {};
+  for (const item of themeItems) {
+    const key = item.subject || (item.theme ? item.painPoint : "Not analyzed yet");
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  }
+
+  const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+
+  return sortedGroups
+    .map(([subject, groupItems]) => {
+      const sorted = [...groupItems].sort(
+        (a, b) => (SENTIMENT_ORDER[a.sentiment] ?? 1) - (SENTIMENT_ORDER[b.sentiment] ?? 1)
+      );
+      const rows = sorted.map(itemRow).join("");
+      const isAnalyzed = Boolean(groupItems[0].theme);
+
+      return `
+        <div class="subject-group">
+          <div class="subject-head">
+            <span class="subject-title">${escapeHtml(subject)} <span class="theme-count">${groupItems.length}</span></span>
+            ${isAnalyzed ? backlogMatchBadge(subject, groupItems) : ""}
+          </div>
+          ${rows}
+        </div>`;
+    })
+    .join("");
+}
+
+function backlogMatchBadge(subject, groupItems) {
+  const matchId = groupItems[0].backlogMatchId;
+  const match = matchId ? backlogItems.find((b) => b.id === matchId) : null;
+
+  if (match) {
+    return `<span class="badge positive">In backlog: ${escapeHtml(match.title)}</span>`;
+  }
+
+  return `
+    <span class="badge outline">Not in your backlog</span>
+    <button type="button" class="secondary add-to-backlog-btn" data-add-subject="${escapeHtml(subject)}">Add to backlog</button>`;
 }
 
 function suggestionsBlock(theme) {
@@ -161,7 +298,10 @@ function itemRow(item) {
 
 function exportItems(format) {
   const showSynced = showSyncedCheckbox.checked;
-  const visible = allItems.filter((i) => showSynced || !i.synced);
+  const experience = experienceFilter.value;
+  const visible = allItems.filter(
+    (i) => (showSynced || !i.synced) && (!experience || i.tenure === experience)
+  );
 
   if (!visible.length) {
     setStatus("Nothing to export.", "error");
@@ -171,12 +311,13 @@ function exportItems(format) {
   let content, mime, filename;
 
   if (format === "csv") {
-    const rows = [["Name", "Tenure", "Theme", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
+    const rows = [["Name", "Tenure", "Theme", "Subject", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
     for (const item of visible) {
       rows.push([
         item.name || "Anonymous",
         item.tenure,
         item.theme || "",
+        item.subject || "",
         item.sentiment || "",
         item.painPoint,
         item.wish,
@@ -199,7 +340,7 @@ function exportItems(format) {
       md += `## ${theme}\n\n`;
       for (const item of items) {
         const who = item.name || "Anonymous";
-        md += `- **${who}** (${item.tenure}, ${item.sentiment || "Neutral"}) — trouble: ${item.painPoint} | would help: ${item.wish}\n`;
+        md += `- **${who}** (${item.tenure}, ${item.sentiment || "Neutral"}${item.subject ? `, ${item.subject}` : ""}) — trouble: ${item.painPoint} | would help: ${item.wish}\n`;
       }
       md += "\n";
     }

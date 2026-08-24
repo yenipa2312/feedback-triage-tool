@@ -359,6 +359,55 @@ button.secondary:hover {
   cursor: pointer;
 }
 
+/* ---- Dashboard: backlog panel ---- */
+
+.backlog-panel {
+  margin-bottom: var(--space-6);
+}
+
+.backlog-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.backlog-panel[open] summary {
+  margin-bottom: var(--space-4);
+}
+
+.backlog-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.backlog-item {
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+  display: grid;
+  gap: 2px;
+}
+
+.backlog-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.backlog-form {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.backlog-form input {
+  flex: 1;
+  min-width: 160px;
+}
+
 /* ---- Dashboard: theme groups ---- */
 
 .section-heading {
@@ -410,13 +459,45 @@ button.secondary:hover {
   font-weight: 600;
 }
 
-.feedback-item {
+.subject-group {
   padding: var(--space-3) 0;
   border-top: 1px solid var(--border);
 }
 
-.feedback-item:first-of-type {
+.subject-group:first-of-type {
   border-top: none;
+  padding-top: 0;
+}
+
+.subject-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.subject-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-to-backlog-btn {
+  padding: 3px 12px;
+  font-size: 0.75rem;
+}
+
+.feedback-item {
+  padding: var(--space-3) 0 0 var(--space-4);
+  border-left: 2px solid var(--border);
+  margin-bottom: var(--space-2);
+}
+
+.feedback-item:first-of-type {
   padding-top: 0;
 }
 

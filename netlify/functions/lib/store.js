@@ -5,15 +5,23 @@
 
 const { getStore } = require("@netlify/blobs");
 
-function feedbackStore() {
+function namedStore(name) {
   const siteID = process.env.NETLIFY_BLOBS_SITE_ID;
   const token = process.env.NETLIFY_BLOBS_TOKEN;
 
   if (siteID && token) {
-    return getStore({ name: "feedback", siteID, token });
+    return getStore({ name, siteID, token });
   }
 
-  return getStore("feedback");
+  return getStore(name);
 }
 
-module.exports = { feedbackStore };
+function feedbackStore() {
+  return namedStore("feedback");
+}
+
+function backlogStore() {
+  return namedStore("backlog");
+}
+
+module.exports = { feedbackStore, backlogStore };

@@ -5,11 +5,14 @@ Two pages:
 - **`index.html`** — "Your voice is very important for us." The public link
   you share with agents: optional name, how long they've worked there, where
   calls give them trouble, and what would help most. No login.
-- **`dashboard.html`** — your view. Click **Analyze New Feedback** to have
-  Claude sort everything into themes (Tooling, Process, Training, Workload,
-  Communication, Compensation, Praise, Other) with sentiment. Check "synced"
-  on items once you've added them to your backlog, and export the rest as
-  CSV or Markdown to paste in.
+- **`dashboard.html`** — your view. Click **Analyze New Feedback** and Claude
+  sorts everything into themes, then clusters items describing the same
+  underlying issue under a shared "subject" (e.g. two agents both flagging
+  slow order lookups become one group, not two). Each subject is checked
+  against **your backlog** (a small list you maintain right on the
+  dashboard) — a match shows a green badge, no match shows "Add to backlog"
+  for one-click adding. Filter by agent experience level, check "synced"
+  once items are handled, export the rest as CSV or Markdown.
 
 ## Design
 
@@ -27,11 +30,20 @@ on every field, and restrained motion tuned for an internal work tool
   built-in key-value store — no external database or account needed. All
   submissions live in one JSON list.
 - `netlify/functions/submit.js` — agents' form posts here
-- `netlify/functions/list.js` — dashboard reads all stored items
-- `netlify/functions/analyze.js` — calls Claude on items with no theme yet,
-  saves the result back to storage
+- `netlify/functions/list.js` — dashboard reads all stored feedback items
+- `netlify/functions/analyze.js` — calls Claude on items with no theme yet;
+  extracts theme, a short "subject" for clustering, sentiment, and checks
+  each subject against the current backlog for a match
 - `netlify/functions/update-status.js` — flips the "synced to backlog" flag
   on one item
+- `netlify/functions/backlog-list.js` / `backlog-add.js` — your backlog,
+  stored separately from feedback, used both for display and as reference
+  material `analyze.js` matches against
+
+**Note:** backlog matching only runs at analysis time, on items that don't
+have a theme yet. If you add a backlog item that would match older, already-
+analyzed feedback, that older feedback won't retroactively pick up the
+match — it's a one-pass check, not a live search.
 - The Anthropic API key is read from the `ANTHROPIC_API_KEY` environment
   variable, only server-side — it never reaches the browser.
 
