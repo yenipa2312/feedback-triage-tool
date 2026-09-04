@@ -232,6 +232,63 @@ textarea:focus {
   opacity: 0.8;
 }
 
+/* ---- Mood scale ---- */
+
+.mood-scale {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mood-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2) 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  font-size: 1.4rem;
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.mood-option:active {
+  transform: scale(0.96);
+}
+
+.mood-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.mood-caption {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.mood-option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--surface-recessed);
+}
+
+.mood-option:has(input:checked) .mood-caption {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mood-option:has(input:focus-visible) {
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mood-option:hover {
+    border-color: var(--text-muted);
+  }
+}
+
 /* ---- Buttons ---- */
 
 button {
@@ -321,6 +378,87 @@ button.secondary:hover {
   border: 1px solid var(--border);
   color: var(--text-muted);
   font-weight: 500;
+}
+
+/* ---- Dashboard: sentiment pulse ---- */
+
+.pulse-bar {
+  margin-bottom: var(--space-3);
+}
+
+.pulse-track {
+  display: flex;
+  height: 10px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--surface-recessed);
+}
+
+.pulse-segment {
+  height: 100%;
+}
+
+.pulse-segment.positive { background: var(--green-500); }
+.pulse-segment.neutral { background: var(--slate-300); }
+.pulse-segment.negative { background: var(--red-500); }
+
+.pulse-legend {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.pulse-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pulse-dot.positive { background: var(--green-500); }
+.pulse-dot.neutral { background: var(--slate-300); }
+.pulse-dot.negative { background: var(--red-500); }
+
+/* ---- Dashboard: overview stats ---- */
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.stat-value.accent {
+  color: var(--accent);
+}
+
+.stat-label {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 /* ---- Dashboard: toolbar ---- */
@@ -447,6 +585,25 @@ button.secondary:hover {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.theme-card.recognition {
+  border-color: var(--positive-text);
+}
+
+.theme-card.recognition h3 {
+  color: var(--positive-text);
+}
+
+.badge.new {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.mood-emoji {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .theme-count {

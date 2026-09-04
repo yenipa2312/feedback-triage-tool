@@ -9,6 +9,8 @@ form.addEventListener("submit", async (e) => {
   const tenure = form.tenure.value;
   const painPoint = form.painPoint.value.trim();
   const wish = form.wish.value.trim();
+  const moodChecked = form.querySelector('input[name="mood"]:checked');
+  const mood = moodChecked ? Number(moodChecked.value) : null;
 
   if (!tenure || !painPoint || !wish) {
     setStatus("Please fill in all three questions before sending.", "error");
@@ -22,7 +24,7 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/.netlify/functions/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, tenure, painPoint, wish }),
+      body: JSON.stringify({ name, tenure, painPoint, wish, mood }),
     });
 
     const data = await res.json();

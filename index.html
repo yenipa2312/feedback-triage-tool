@@ -21,6 +21,38 @@
 
     <form class="panel" id="feedback-form">
       <div class="field">
+        <span class="field-label">How's your day going?</span>
+        <span class="field-hint">Optional, totally fine to skip.</span>
+        <div class="mood-scale" role="radiogroup" aria-label="How's your day going?">
+          <label class="mood-option">
+            <input type="radio" name="mood" value="1" />
+            <span aria-hidden="true">😞</span>
+            <span class="mood-caption">Rough</span>
+          </label>
+          <label class="mood-option">
+            <input type="radio" name="mood" value="2" />
+            <span aria-hidden="true">🙁</span>
+            <span class="mood-caption">Not great</span>
+          </label>
+          <label class="mood-option">
+            <input type="radio" name="mood" value="3" />
+            <span aria-hidden="true">😐</span>
+            <span class="mood-caption">Okay</span>
+          </label>
+          <label class="mood-option">
+            <input type="radio" name="mood" value="4" />
+            <span aria-hidden="true">🙂</span>
+            <span class="mood-caption">Good</span>
+          </label>
+          <label class="mood-option">
+            <input type="radio" name="mood" value="5" />
+            <span aria-hidden="true">😄</span>
+            <span class="mood-caption">Great</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
         <label class="field-label" for="name">Name</label>
         <span class="field-hint">Optional — leave it blank if you'd rather stay anonymous.</span>
         <input type="text" id="name" name="name" autocomplete="name" />

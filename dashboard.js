@@ -12,8 +12,12 @@ const backlogCountEl = document.getElementById("backlog-count");
 const backlogForm = document.getElementById("backlog-form");
 const backlogTitleInput = document.getElementById("backlog-title");
 const backlogDescriptionInput = document.getElementById("backlog-description");
+const statsRowEl = document.getElementById("stats-row");
+const pulseBarEl = document.getElementById("pulse-bar");
 
 const SENTIMENT_ORDER = { Negative: 0, Neutral: 1, Positive: 2 };
+const MOOD_EMOJI = { 1: "😞", 2: "🙁", 3: "😐", 4: "🙂", 5: "😄" };
+const NEW_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 let allItems = [];
 let backlogItems = [];
@@ -167,6 +171,9 @@ function render() {
 
   summaryEl.textContent = `${allItems.length} total · ${unanalyzedCount} not yet analyzed · showing ${visible.length}`;
 
+  renderStats(visible);
+  renderPulseBar(visible);
+
   if (!visible.length) {
     groupsEl.innerHTML = `<p class="empty-state">Nothing to show yet.</p>`;
     return;
@@ -183,9 +190,11 @@ function render() {
 
   groupsEl.innerHTML = sortedThemes
     .map(([theme, themeItems]) => {
+      const recognitionClass = theme === "Praise" ? " recognition" : "";
+      const icon = theme === "Praise" ? "🎉 " : "";
       return `
-        <div class="theme-card stagger-in">
-          <h3>${escapeHtml(theme)} <span class="theme-count">${themeItems.length}</span></h3>
+        <div class="theme-card stagger-in${recognitionClass}">
+          <h3>${icon}${escapeHtml(theme)} <span class="theme-count">${themeItems.length}</span></h3>
           ${subjectGroups(theme, themeItems)}
           ${suggestionsBlock(theme)}
         </div>`;
@@ -205,6 +214,78 @@ function render() {
       addSubjectToBacklog(subject, groupItems);
     });
   });
+}
+
+function renderPulseBar(visible) {
+  const analyzed = visible.filter((i) => i.sentiment);
+  if (!analyzed.length) {
+    pulseBarEl.innerHTML = "";
+    return;
+  }
+
+  const counts = { Positive: 0, Neutral: 0, Negative: 0 };
+  for (const item of analyzed) {
+    if (counts[item.sentiment] !== undefined) counts[item.sentiment] += 1;
+  }
+  const total = analyzed.length;
+  const pct = (n) => Math.round((n / total) * 100);
+
+  pulseBarEl.innerHTML = `
+    <div class="pulse-track">
+      <span class="pulse-segment positive" style="flex: ${counts.Positive}"></span>
+      <span class="pulse-segment neutral" style="flex: ${counts.Neutral}"></span>
+      <span class="pulse-segment negative" style="flex: ${counts.Negative}"></span>
+    </div>
+    <div class="pulse-legend">
+      <span><span class="pulse-dot positive"></span>${pct(counts.Positive)}% positive</span>
+      <span><span class="pulse-dot neutral"></span>${pct(counts.Neutral)}% neutral</span>
+      <span><span class="pulse-dot negative"></span>${pct(counts.Negative)}% negative</span>
+      <span>(${total} analyzed)</span>
+    </div>`;
+}
+
+function renderStats(visible) {
+  if (!visible.length) {
+    statsRowEl.innerHTML = "";
+    return;
+  }
+
+  const negative = visible.filter((i) => i.sentiment === "Negative").length;
+
+  const themeCounts = {};
+  for (const item of visible) {
+    if (!item.theme) continue;
+    themeCounts[item.theme] = (themeCounts[item.theme] || 0) + 1;
+  }
+  const topThemeEntry = Object.entries(themeCounts).sort((a, b) => b[1] - a[1])[0];
+  const topTheme = topThemeEntry ? `${topThemeEntry[0]} (${topThemeEntry[1]})` : "—";
+
+  const analyzed = visible.filter((i) => i.theme && i.theme !== "Praise");
+  const subjectsSeen = new Set();
+  let unmatchedSubjects = 0;
+  for (const item of analyzed) {
+    const key = item.subject || item.painPoint;
+    if (subjectsSeen.has(key)) continue;
+    subjectsSeen.add(key);
+    if (!item.backlogMatchId) unmatchedSubjects += 1;
+  }
+
+  const tiles = [
+    { value: visible.length, label: "Feedback shown", accent: false },
+    { value: negative, label: "Negative sentiment", accent: negative > 0 },
+    { value: topTheme, label: "Top theme", accent: false },
+    { value: unmatchedSubjects, label: "Issues not in backlog", accent: unmatchedSubjects > 0 },
+  ];
+
+  statsRowEl.innerHTML = tiles
+    .map(
+      (t) => `
+      <div class="stat-tile">
+        <div class="stat-value${t.accent ? " accent" : ""}">${escapeHtml(String(t.value))}</div>
+        <div class="stat-label">${escapeHtml(t.label)}</div>
+      </div>`
+    )
+    .join("");
 }
 
 function subjectGroups(theme, themeItems) {
@@ -276,12 +357,14 @@ function sentimentBadge(sentiment) {
 function itemRow(item) {
   const date = new Date(item.submittedAt).toLocaleDateString();
   const who = item.name ? escapeHtml(item.name) : "Anonymous";
+  const isNew = Date.now() - new Date(item.submittedAt).getTime() < NEW_WINDOW_MS;
+  const moodEmoji = MOOD_EMOJI[item.mood] || "";
 
   return `
     <div class="feedback-item">
       <div class="feedback-item-head">
-        <span class="feedback-who">${who} <span class="feedback-meta">&middot; ${escapeHtml(item.tenure)} &middot; ${date}</span></span>
-        <span>${sentimentBadge(item.sentiment)}</span>
+        <span class="feedback-who">${moodEmoji ? `<span class="mood-emoji" title="Mood: ${item.mood}/5">${moodEmoji}</span> ` : ""}${who} <span class="feedback-meta">&middot; ${escapeHtml(item.tenure)} &middot; ${date}</span></span>
+        <span>${isNew ? '<span class="badge new">New</span> ' : ""}${sentimentBadge(item.sentiment)}</span>
       </div>
       <dl class="feedback-body">
         <dt>Trouble spot</dt>
@@ -311,11 +394,12 @@ function exportItems(format) {
   let content, mime, filename;
 
   if (format === "csv") {
-    const rows = [["Name", "Tenure", "Theme", "Subject", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
+    const rows = [["Name", "Tenure", "Mood", "Theme", "Subject", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
     for (const item of visible) {
       rows.push([
         item.name || "Anonymous",
         item.tenure,
+        item.mood || "",
         item.theme || "",
         item.subject || "",
         item.sentiment || "",

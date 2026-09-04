@@ -17,12 +17,14 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
   }
 
-  let name, tenure, painPoint, wish;
+  let name, tenure, painPoint, wish, mood;
   try {
-    ({ name, tenure, painPoint, wish } = JSON.parse(event.body || "{}"));
+    ({ name, tenure, painPoint, wish, mood } = JSON.parse(event.body || "{}"));
   } catch {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid request body" }) };
   }
+
+  const moodValue = Number.isInteger(mood) && mood >= 1 && mood <= 5 ? mood : null;
 
   if (!TENURE_VALUES.has(tenure)) {
     return { statusCode: 400, body: JSON.stringify({ error: "Please select how long you've been working here." }) };
@@ -43,6 +45,7 @@ exports.handler = async (event) => {
     tenure,
     painPoint: painPoint.trim(),
     wish: wish.trim(),
+    mood: moodValue,
     submittedAt: new Date().toISOString(),
     theme: null,
     sentiment: null,

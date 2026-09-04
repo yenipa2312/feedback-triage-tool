@@ -3,8 +3,9 @@
 Two pages:
 
 - **`index.html`** — "Your voice is very important for us." The public link
-  you share with agents: optional name, how long they've worked there, where
-  calls give them trouble, and what would help most. No login.
+  you share with agents: an optional 1-5 mood check-in, optional name, how
+  long they've worked there, where calls give them trouble, and what would
+  help most. No login.
 - **`dashboard.html`** — your view. Click **Analyze New Feedback** and Claude
   sorts everything into themes, then clusters items describing the same
   underlying issue under a shared "subject" (e.g. two agents both flagging
@@ -12,7 +13,10 @@ Two pages:
   against **your backlog** (a small list you maintain right on the
   dashboard) — a match shows a green badge, no match shows "Add to backlog"
   for one-click adding. Filter by agent experience level, check "synced"
-  once items are handled, export the rest as CSV or Markdown.
+  once items are handled, export the rest as CSV or Markdown. A sentiment-
+  pulse bar and a few stat tiles give you the at-a-glance overview; Praise
+  items get a distinct "recognition" card treatment; anything submitted in
+  the last 48 hours gets a "New" badge.
 
 ## Design
 
@@ -39,13 +43,13 @@ on every field, and restrained motion tuned for an internal work tool
 - `netlify/functions/backlog-list.js` / `backlog-add.js` — your backlog,
   stored separately from feedback, used both for display and as reference
   material `analyze.js` matches against
+- The Anthropic API key is read from the `ANTHROPIC_API_KEY` environment
+  variable, only server-side — it never reaches the browser.
 
 **Note:** backlog matching only runs at analysis time, on items that don't
 have a theme yet. If you add a backlog item that would match older, already-
 analyzed feedback, that older feedback won't retroactively pick up the
 match — it's a one-pass check, not a live search.
-- The Anthropic API key is read from the `ANTHROPIC_API_KEY` environment
-  variable, only server-side — it never reaches the browser.
 
 **Known limitation:** storage uses a single JSON blob updated on every
 submit, so two agents submitting in the exact same instant could
