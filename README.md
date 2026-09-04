@@ -15,11 +15,15 @@ Two pages:
   slow order lookups become one group, not two). Each subject is checked
   against **your backlog** (a small list you maintain right on the
   dashboard) — a match shows a green badge, no match shows "Add to backlog"
-  for one-click adding. Filter by agent experience level, check "synced"
-  once items are handled, export the rest as CSV or Markdown. A sentiment-
-  pulse bar and a few stat tiles give you the at-a-glance overview; Praise
-  items get a distinct "recognition" card treatment; anything submitted in
-  the last 48 hours gets a "New" badge.
+  for one-click adding. Each item is also tagged with a **customer-journey
+  stage** (Greeting & Verification, Issue Diagnosis, Resolution, Escalation
+  & Transfer, Wrap-up & Documentation) — a separate lens from theme, for
+  reading *where in the call* friction concentrates rather than what kind
+  of issue it is. Filter by agent experience level or journey stage, check
+  "synced" once items are handled, export the rest as CSV or Markdown. A
+  sentiment-pulse bar and stat tiles give you the at-a-glance overview;
+  Praise items get a distinct "recognition" card treatment; anything
+  submitted in the last 48 hours gets a "New" badge.
 
 ## Design
 
@@ -49,8 +53,9 @@ and restrained motion tuned for an internal work tool.
 - `netlify/functions/submit.js` — agents' form posts here
 - `netlify/functions/list.js` — dashboard reads all stored feedback items
 - `netlify/functions/analyze.js` — calls Claude on items with no theme yet;
-  extracts theme, a short "subject" for clustering, sentiment, and checks
-  each subject against the current backlog for a match
+  extracts theme, a short "subject" for clustering, sentiment, a
+  customer-journey stage, and checks each subject against the current
+  backlog for a match
 - `netlify/functions/update-status.js` — flips the "synced to backlog" flag
   on one item
 - `netlify/functions/backlog-list.js` / `backlog-add.js` — your backlog,

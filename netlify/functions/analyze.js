@@ -2,8 +2,20 @@
 //  1. classify theme + sentiment (as before)
 //  2. extract a short "subject" so items about the same underlying issue
 //     can be grouped together, even across different agents' wording
-//  3. check the subject against the PM's current backlog and flag a match
+//  3. tag which stage of the call the friction happened in, for a
+//     customer-journey view (separate lens from theme - a CX expert reads
+//     journey stage, a PM reads theme)
+//  4. check the subject against the PM's current backlog and flag a match
 // Persists all of it back to storage and returns the full updated list.
+
+const JOURNEY_STAGES = [
+  "Greeting & Verification",
+  "Issue Diagnosis",
+  "Resolution",
+  "Escalation & Transfer",
+  "Wrap-up & Documentation",
+  "Other",
+];
 
 const { feedbackStore, backlogStore } = require("./lib/store");
 
@@ -48,6 +60,12 @@ For each item below, output:
   describe the same underlying issue, use the EXACT SAME subject text for
   all of them, so they can be grouped together automatically.
 - "sentiment": one of Positive, Neutral, Negative
+- "journeyStage": which part of a customer call this friction happens in -
+  one of ${JOURNEY_STAGES.join(", ")}. This is about the CUSTOMER's call
+  flow (when the agent is on the phone with a customer), not the agent's
+  internal tools/process in general. If the feedback isn't tied to a
+  specific moment in a call (e.g. general workload or compensation
+  comments), use "Other".
 - "backlogMatchId": the id of a backlog item below that already covers this
   same underlying issue, or null if none of them genuinely do. Only match
   when it's really the same issue, not just the same general theme.
@@ -59,7 +77,7 @@ Items to classify:
 ${listForPrompt}
 
 Respond with ONLY valid JSON (no markdown fences, no commentary), matching each item by its exact id:
-{"items":[{"id":"...","theme":"...","subject":"...","sentiment":"...","backlogMatchId":"..."}]}`;
+{"items":[{"id":"...","theme":"...","subject":"...","sentiment":"...","journeyStage":"...","backlogMatchId":"..."}]}`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -95,6 +113,7 @@ Respond with ONLY valid JSON (no markdown fences, no commentary), matching each 
         theme: result.theme,
         subject: result.subject || null,
         sentiment: result.sentiment,
+        journeyStage: JOURNEY_STAGES.includes(result.journeyStage) ? result.journeyStage : "Other",
         backlogMatchId: result.backlogMatchId || null,
       };
     });

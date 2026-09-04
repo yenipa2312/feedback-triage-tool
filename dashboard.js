@@ -2,6 +2,7 @@ const analyzeBtn = document.getElementById("analyze-btn");
 const refreshBtn = document.getElementById("refresh-btn");
 const showSyncedCheckbox = document.getElementById("show-synced");
 const experienceFilter = document.getElementById("experience-filter");
+const journeyFilter = document.getElementById("journey-filter");
 const exportCsvBtn = document.getElementById("export-csv-btn");
 const exportMdBtn = document.getElementById("export-md-btn");
 const statusEl = document.getElementById("status");
@@ -26,6 +27,7 @@ analyzeBtn.addEventListener("click", analyzeNew);
 refreshBtn.addEventListener("click", () => { loadItems(); loadBacklog(); });
 showSyncedCheckbox.addEventListener("change", render);
 experienceFilter.addEventListener("change", render);
+journeyFilter.addEventListener("change", render);
 exportCsvBtn.addEventListener("click", () => exportItems("csv"));
 exportMdBtn.addEventListener("click", () => exportItems("md"));
 backlogForm.addEventListener("submit", addBacklogItem);
@@ -161,12 +163,20 @@ function renderBacklog() {
     .join("");
 }
 
-function render() {
+function getVisibleItems() {
   const showSynced = showSyncedCheckbox.checked;
   const experience = experienceFilter.value;
-  const visible = allItems.filter(
-    (i) => (showSynced || !i.synced) && (!experience || i.tenure === experience)
+  const journeyStage = journeyFilter.value;
+  return allItems.filter(
+    (i) =>
+      (showSynced || !i.synced) &&
+      (!experience || i.tenure === experience) &&
+      (!journeyStage || i.journeyStage === journeyStage)
   );
+}
+
+function render() {
+  const visible = getVisibleItems();
   const unanalyzedCount = allItems.filter((i) => !i.theme).length;
 
   summaryEl.textContent = `${allItems.length} total · ${unanalyzedCount} not yet analyzed · showing ${visible.length}`;
@@ -260,6 +270,14 @@ function renderStats(visible) {
   const topThemeEntry = Object.entries(themeCounts).sort((a, b) => b[1] - a[1])[0];
   const topTheme = topThemeEntry ? `${topThemeEntry[0]} (${topThemeEntry[1]})` : "—";
 
+  const journeyCounts = {};
+  for (const item of visible) {
+    if (!item.journeyStage || item.journeyStage === "Other") continue;
+    journeyCounts[item.journeyStage] = (journeyCounts[item.journeyStage] || 0) + 1;
+  }
+  const topJourneyEntry = Object.entries(journeyCounts).sort((a, b) => b[1] - a[1])[0];
+  const topJourneyStage = topJourneyEntry ? `${topJourneyEntry[0]} (${topJourneyEntry[1]})` : "—";
+
   const analyzed = visible.filter((i) => i.theme && i.theme !== "Praise");
   const subjectsSeen = new Set();
   let unmatchedSubjects = 0;
@@ -274,6 +292,7 @@ function renderStats(visible) {
     { value: visible.length, label: "Feedback shown", accent: false },
     { value: negative, label: "Negative sentiment", accent: negative > 0 },
     { value: topTheme, label: "Top theme", accent: false },
+    { value: topJourneyStage, label: "Top journey stage", accent: false },
     { value: unmatchedSubjects, label: "Issues not in backlog", accent: unmatchedSubjects > 0 },
   ];
 
@@ -364,7 +383,7 @@ function itemRow(item) {
     <div class="feedback-item">
       <div class="feedback-item-head">
         <span class="feedback-who">${moodEmoji ? `<span class="mood-emoji" title="Mood: ${item.mood}/5">${moodEmoji}</span> ` : ""}${who} <span class="feedback-meta">&middot; ${escapeHtml(item.tenure)} &middot; ${date}</span></span>
-        <span>${isNew ? '<span class="badge new">New</span> ' : ""}${sentimentBadge(item.sentiment)}</span>
+        <span>${isNew ? '<span class="badge new">New</span> ' : ""}${item.journeyStage ? `<span class="badge outline">${escapeHtml(item.journeyStage)}</span> ` : ""}${sentimentBadge(item.sentiment)}</span>
       </div>
       <dl class="feedback-body">
         <dt>Trouble spot</dt>
@@ -380,11 +399,7 @@ function itemRow(item) {
 }
 
 function exportItems(format) {
-  const showSynced = showSyncedCheckbox.checked;
-  const experience = experienceFilter.value;
-  const visible = allItems.filter(
-    (i) => (showSynced || !i.synced) && (!experience || i.tenure === experience)
-  );
+  const visible = getVisibleItems();
 
   if (!visible.length) {
     setStatus("Nothing to export.", "error");
@@ -394,7 +409,7 @@ function exportItems(format) {
   let content, mime, filename;
 
   if (format === "csv") {
-    const rows = [["Name", "Tenure", "Mood", "Theme", "Subject", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
+    const rows = [["Name", "Tenure", "Mood", "Theme", "Subject", "Journey stage", "Sentiment", "Trouble spot", "Would help", "Submitted", "Synced"]];
     for (const item of visible) {
       rows.push([
         item.name || "Anonymous",
@@ -402,6 +417,7 @@ function exportItems(format) {
         item.mood || "",
         item.theme || "",
         item.subject || "",
+        item.journeyStage || "",
         item.sentiment || "",
         item.painPoint,
         item.wish,
