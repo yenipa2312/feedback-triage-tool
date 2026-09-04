@@ -14,8 +14,11 @@ Two pages:
   underlying issue under a shared "subject" (e.g. two agents both flagging
   slow order lookups become one group, not two). Each subject is checked
   against **your backlog** (a small list you maintain right on the
-  dashboard) — a match shows a green badge, no match shows "Add to backlog"
-  for one-click adding. Each item is also tagged with a **customer-journey
+  dashboard, each item typed as a **Task** or **Story**) — a match shows a
+  green badge, no match shows "Add to backlog" for one-click adding. Export
+  the whole backlog as a Jira-import-ready CSV (`Issue Type, Summary,
+  Description`) any time — no Jira API integration yet, but the file is
+  already shaped for it. Each item is also tagged with a **customer-journey
   stage** (Greeting & Verification, Issue Diagnosis, Resolution, Escalation
   & Transfer, Wrap-up & Documentation) — a separate lens from theme, for
   reading *where in the call* friction concentrates rather than what kind

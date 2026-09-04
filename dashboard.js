@@ -13,6 +13,8 @@ const backlogCountEl = document.getElementById("backlog-count");
 const backlogForm = document.getElementById("backlog-form");
 const backlogTitleInput = document.getElementById("backlog-title");
 const backlogDescriptionInput = document.getElementById("backlog-description");
+const backlogTypeInput = document.getElementById("backlog-type");
+const exportBacklogBtn = document.getElementById("export-backlog-btn");
 const statsRowEl = document.getElementById("stats-row");
 const pulseBarEl = document.getElementById("pulse-bar");
 
@@ -31,6 +33,7 @@ journeyFilter.addEventListener("change", render);
 exportCsvBtn.addEventListener("click", () => exportItems("csv"));
 exportMdBtn.addEventListener("click", () => exportItems("md"));
 backlogForm.addEventListener("submit", addBacklogItem);
+exportBacklogBtn.addEventListener("click", exportBacklog);
 
 loadItems();
 loadBacklog();
@@ -65,13 +68,14 @@ async function addBacklogItem(e) {
   e.preventDefault();
   const title = backlogTitleInput.value.trim();
   const description = backlogDescriptionInput.value.trim();
+  const type = backlogTypeInput.value;
   if (!title) return;
 
   try {
     const res = await fetch("/.netlify/functions/backlog-add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description }),
+      body: JSON.stringify({ title, description, type }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Could not add backlog item.");
@@ -83,7 +87,7 @@ async function addBacklogItem(e) {
   }
 }
 
-async function addSubjectToBacklog(subject, groupItems) {
+async function addSubjectToBacklog(subject, groupItems, type) {
   const theme = groupItems[0]?.theme || "Other";
   const description = `Reported by ${groupItems.length} agent(s), theme: ${theme}. Example: "${groupItems[0].painPoint}"`;
 
@@ -91,7 +95,7 @@ async function addSubjectToBacklog(subject, groupItems) {
     const res = await fetch("/.netlify/functions/backlog-add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: subject, description }),
+      body: JSON.stringify({ title: subject, description, type }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Could not add backlog item.");
@@ -156,7 +160,7 @@ function renderBacklog() {
     .map(
       (b) => `
       <div class="backlog-item">
-        <strong>${escapeHtml(b.title)}</strong>
+        <strong><span class="badge outline">${escapeHtml(b.type || "Task")}</span> ${escapeHtml(b.title)}</strong>
         ${b.description ? `<span class="feedback-meta">${escapeHtml(b.description)}</span>` : ""}
       </div>`
     )
@@ -221,7 +225,8 @@ function render() {
     el.addEventListener("click", () => {
       const subject = el.dataset.addSubject;
       const groupItems = visible.filter((i) => (i.subject || null) === subject);
-      addSubjectToBacklog(subject, groupItems);
+      const typeSelect = el.parentElement.querySelector("[data-subject-type]");
+      addSubjectToBacklog(subject, groupItems, typeSelect ? typeSelect.value : "Task");
     });
   });
 }
@@ -342,11 +347,16 @@ function backlogMatchBadge(subject, groupItems) {
   const match = matchId ? backlogItems.find((b) => b.id === matchId) : null;
 
   if (match) {
-    return `<span class="badge positive">In backlog: ${escapeHtml(match.title)}</span>`;
+    const typeLabel = match.type ? `${match.type}: ` : "";
+    return `<span class="badge positive">In backlog: ${typeLabel}${escapeHtml(match.title)}</span>`;
   }
 
   return `
     <span class="badge outline">Not in your backlog</span>
+    <select class="subject-type-select" data-subject-type aria-label="Issue type for ${escapeHtml(subject)}">
+      <option value="Task">Task</option>
+      <option value="Story">Story</option>
+    </select>
     <button type="button" class="secondary add-to-backlog-btn" data-add-subject="${escapeHtml(subject)}">Add to backlog</button>`;
 }
 
@@ -454,6 +464,29 @@ function exportItems(format) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportBacklog() {
+  if (!backlogItems.length) {
+    setStatus("Your backlog is empty — nothing to export.", "error");
+    return;
+  }
+
+  // Standard Jira CSV-import column names, so this file can be dropped
+  // straight into a bulk import once real Jira integration exists.
+  const rows = [["Issue Type", "Summary", "Description"]];
+  for (const b of backlogItems) {
+    rows.push([b.type || "Task", b.title, b.description || ""]);
+  }
+  const content = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
+
+  const blob = new Blob([content], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "backlog-jira-import.csv";
   a.click();
   URL.revokeObjectURL(url);
 }

@@ -1,17 +1,22 @@
-// Dashboard endpoint - adds one item to the PM's backlog (title + optional
-// description). Used both for manual entries and the "Add to backlog"
-// one-click action on an unmatched issue subject.
+// Dashboard endpoint - adds one item to the PM's backlog (title, optional
+// description, and an issue type). Used both for manual entries and the
+// "Add to backlog" one-click action on an unmatched issue subject.
+// The "type" field exists so this list is already shaped like Jira import
+// data (Issue Type / Summary / Description) for whenever real Jira
+// integration gets wired up - no Jira API today, just the right shape.
 
 const { backlogStore } = require("./lib/store");
+
+const ISSUE_TYPES = new Set(["Task", "Story"]);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
   }
 
-  let title, description;
+  let title, description, type;
   try {
-    ({ title, description } = JSON.parse(event.body || "{}"));
+    ({ title, description, type } = JSON.parse(event.body || "{}"));
   } catch {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid request body" }) };
   }
@@ -27,6 +32,7 @@ exports.handler = async (event) => {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title: title.trim(),
     description: typeof description === "string" ? description.trim() : "",
+    type: ISSUE_TYPES.has(type) ? type : "Task",
     createdAt: new Date().toISOString(),
   };
   items.push(newItem);

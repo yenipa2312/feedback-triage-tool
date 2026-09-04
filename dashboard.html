@@ -55,10 +55,15 @@
       <summary>Your backlog <span id="backlog-count" class="theme-count"></span></summary>
       <div id="backlog-list" class="backlog-list"></div>
       <form id="backlog-form" class="backlog-form">
+        <select id="backlog-type" aria-label="Issue type">
+          <option value="Task">Task</option>
+          <option value="Story">Story</option>
+        </select>
         <input type="text" id="backlog-title" placeholder="Backlog item title" required />
         <input type="text" id="backlog-description" placeholder="Short description (optional)" />
         <button type="submit" class="secondary">Add</button>
       </form>
+      <button type="button" id="export-backlog-btn" class="secondary backlog-export-btn">Export backlog (Jira-ready CSV)</button>
     </details>
 
     <section>

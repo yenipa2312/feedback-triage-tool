@@ -591,6 +591,15 @@ button.secondary:hover {
   min-width: 160px;
 }
 
+.backlog-form select {
+  width: auto;
+}
+
+.backlog-export-btn {
+  margin-top: var(--space-3);
+  font-size: 0.8rem;
+}
+
 /* ---- Dashboard: theme groups ---- */
 
 .section-heading {
@@ -691,6 +700,13 @@ button.secondary:hover {
 .add-to-backlog-btn {
   padding: 3px 12px;
   font-size: 0.75rem;
+}
+
+.subject-type-select {
+  padding: 3px 24px 3px 10px;
+  font-size: 0.75rem;
+  width: auto;
+  background-position: right 8px center;
 }
 
 .feedback-item {
