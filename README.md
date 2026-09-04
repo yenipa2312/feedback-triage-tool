@@ -5,7 +5,10 @@ Two pages:
 - **`index.html`** — "Your voice is very important for us." The public link
   you share with agents: an optional 1-5 mood check-in, optional name, how
   long they've worked there, where calls give them trouble, and what would
-  help most. No login.
+  help most. No login. After sending, a small milestone badge celebrates
+  how many times *that browser* has submitted (1st, 3rd, 5th, 10th...) —
+  tracked only in `localStorage`, never sent anywhere or tied to a name, so
+  it motivates without undermining anonymity.
 - **`dashboard.html`** — your view. Click **Analyze New Feedback** and Claude
   sorts everything into themes, then clusters items describing the same
   underlying issue under a shared "subject" (e.g. two agents both flagging
