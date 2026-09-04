@@ -1,65 +1,57 @@
 /*
-  Design direction (per impeccable-design / design-taste-frontend skills):
-  physical scene = an agent at a call-center desk, between calls, filling
-  this out on a shared work PC — needs to read as calm, trustworthy, and
-  quick, not like a marketing SaaS dashboard. Palette: cool slate neutrals
-  + a single locked burnt-orange/terracotta accent (the skills' listed
-  alternative to the generic "AI purple/blue" default). Dual-mode: follows
-  prefers-color-scheme, tokens defined for both. Dials: VARIANCE 4,
-  MOTION 3, DENSITY 3 on the form / 6 on the dashboard (trust-first,
-  internal-tool preset, not a marketing site).
+  Ameriabank brand system, sourced from skills/ameriabank-deck/references/
+  design-system.md (colours sampled from the logo file, not guessed).
+  Cambria/Calibri are Office system fonts — no web-font download needed,
+  and they render true on any bank machine. Dual-mode via
+  prefers-color-scheme; DARK is the brand's own "dark slide" mode, not an
+  invented one. One documented brand rule drives the button styling:
+  green fills take near-black text, never white.
 
   Radius scale (locked, three steps only): 10px controls, 16px panels,
   full pill for badges/toggles.
 */
 
 :root {
-  --font-sans: "Urbanist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Calibri", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-heading: "Cambria", Georgia, "Times New Roman", serif;
 
-  /* primitive: neutral (cool slate, hue 250) */
-  --slate-0: oklch(99.5% 0.002 250);
-  --slate-50: oklch(97% 0.005 250);
-  --slate-100: oklch(94% 0.007 250);
-  --slate-200: oklch(88% 0.01 250);
-  --slate-300: oklch(78% 0.012 250);
-  --slate-500: oklch(55% 0.015 250);
-  --slate-700: oklch(35% 0.015 250);
-  --slate-900: oklch(22% 0.014 250);
-
-  /* primitive: accent (burnt orange / terracotta, hue 45 — locked, one accent only) */
-  --terracotta-300: oklch(80% 0.1 50);
-  --terracotta-500: oklch(64% 0.16 46);
-  --terracotta-600: oklch(56% 0.17 44);
-  --terracotta-700: oklch(47% 0.16 42);
-
-  /* primitive: semantic hues */
-  --green-500: oklch(52% 0.13 145);
-  --green-200: oklch(93% 0.05 145);
-  --green-800: oklch(32% 0.09 145);
-  --red-500: oklch(53% 0.19 22);
-  --red-200: oklch(93% 0.06 22);
-  --red-800: oklch(38% 0.14 22);
+  /* primitive: Ameriabank brand palette (verified hex, see design-system.md) */
+  --brand-green: #68bd45;
+  --brand-green-deep: #3d8b26;
+  --brand-dark: #111111;
+  --brand-pale: #eef6e9;
+  --brand-midgrey: #d9d9d9;
+  --brand-ondark: #c9c9c9;
+  --brand-ink: #1f1f1f;
+  --brand-muted: #5a5a5a;
+  --brand-grey: #8a8a8a;
+  --brand-risk: #c0392b;
+  --brand-white: #ffffff;
 
   /* semantic tier — light mode (default) */
-  --bg: var(--slate-50);
-  --surface: var(--slate-0);
-  --surface-recessed: var(--slate-100);
-  --border: var(--slate-200);
-  --text: var(--slate-900);
-  --text-muted: var(--slate-500);
-  --accent: var(--terracotta-500);
-  --accent-solid: var(--terracotta-600);
-  --accent-solid-hover: var(--terracotta-700);
-  --on-accent: var(--slate-0);
-  --focus-ring: oklch(64% 0.16 46 / 45%);
-  --shadow-color: oklch(24% 0.02 250);
+  --bg: var(--brand-white);
+  --surface: var(--brand-pale);
+  --surface-recessed: var(--brand-white);
+  --border: var(--brand-midgrey);
+  --text: var(--brand-ink);
+  --text-muted: var(--brand-muted);
+  --accent: var(--brand-green-deep);
+  --accent-solid: var(--brand-green);
+  --accent-solid-hover: var(--brand-green-deep);
+  --on-accent: var(--brand-dark);
+  --on-accent-hover: var(--brand-white);
+  --focus-ring: color-mix(in oklch, var(--brand-green-deep) 45%, transparent);
+  --shadow-color: var(--brand-dark);
 
-  --positive-bg: var(--green-200);
-  --positive-text: var(--green-800);
-  --negative-bg: var(--red-200);
-  --negative-text: var(--red-800);
-  --neutral-bg: var(--slate-100);
-  --neutral-text: var(--slate-700);
+  --positive-bg: var(--brand-pale);
+  --positive-text: var(--brand-green-deep);
+  --negative-bg: color-mix(in oklch, var(--brand-risk) 12%, white);
+  --negative-text: color-mix(in oklch, var(--brand-risk) 85%, black);
+  --neutral-bg: var(--brand-midgrey);
+  --neutral-text: var(--brand-ink);
+
+  --disabled-bg: var(--brand-midgrey);
+  --disabled-text: var(--brand-grey);
 
   --radius-control: 10px;
   --radius-panel: 16px;
@@ -81,26 +73,30 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: oklch(18% 0.012 250);
-    --surface: oklch(23% 0.014 250);
-    --surface-recessed: oklch(15% 0.01 250);
-    --border: oklch(32% 0.016 250);
-    --text: oklch(93% 0.006 250);
-    --text-muted: oklch(68% 0.012 250);
+    --bg: var(--brand-dark);
+    --surface: #1c1c1c;
+    --surface-recessed: #151515;
+    --border: #333333;
+    --text: var(--brand-white);
+    --text-muted: var(--brand-ondark);
 
-    --accent: oklch(74% 0.13 46);
-    --accent-solid: oklch(68% 0.14 46);
-    --accent-solid-hover: oklch(74% 0.13 46);
-    --on-accent: oklch(16% 0.02 46);
-    --focus-ring: oklch(74% 0.13 46 / 45%);
-    --shadow-color: oklch(4% 0.015 250);
+    --accent: var(--brand-green);
+    --accent-solid: var(--brand-green);
+    --accent-solid-hover: color-mix(in oklch, var(--brand-green) 85%, white);
+    --on-accent: var(--brand-dark);
+    --on-accent-hover: var(--brand-dark);
+    --focus-ring: color-mix(in oklch, var(--brand-green) 45%, transparent);
+    --shadow-color: #000000;
 
-    --positive-bg: oklch(28% 0.06 145);
-    --positive-text: oklch(82% 0.1 145);
-    --negative-bg: oklch(28% 0.08 22);
-    --negative-text: oklch(83% 0.13 22);
-    --neutral-bg: oklch(27% 0.012 250);
-    --neutral-text: oklch(78% 0.012 250);
+    --positive-bg: color-mix(in oklch, var(--brand-green) 20%, var(--brand-dark));
+    --positive-text: var(--brand-green);
+    --negative-bg: color-mix(in oklch, var(--brand-risk) 22%, var(--brand-dark));
+    --negative-text: color-mix(in oklch, var(--brand-risk) 55%, white);
+    --neutral-bg: #262626;
+    --neutral-text: var(--brand-ondark);
+
+    --disabled-bg: #2a2a2a;
+    --disabled-text: var(--brand-grey);
   }
 }
 
@@ -119,6 +115,7 @@ body {
 }
 
 h1, h2, h3 {
+  font-family: var(--font-heading);
   text-wrap: balance;
   font-weight: 700;
   margin: 0;
@@ -140,6 +137,27 @@ p {
 
 .page-header {
   margin-bottom: var(--space-8);
+}
+
+.logo-chip {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.brand-logo {
+  display: block;
+  height: 22px;
+  width: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* the wordmark's black half is unreadable on a dark background without
+     a white backing chip, per design-system.md */
+  .logo-chip {
+    background: var(--brand-white);
+  }
 }
 
 .page-header h1 {
@@ -318,11 +336,12 @@ button.primary {
 
 button.primary:hover {
   background: var(--accent-solid-hover);
+  color: var(--on-accent-hover);
 }
 
 button.primary:disabled {
-  background: var(--slate-300);
-  color: var(--slate-0);
+  background: var(--disabled-bg);
+  color: var(--disabled-text);
   cursor: not-allowed;
   transform: none;
 }
@@ -398,9 +417,9 @@ button.secondary:hover {
   height: 100%;
 }
 
-.pulse-segment.positive { background: var(--green-500); }
-.pulse-segment.neutral { background: var(--slate-300); }
-.pulse-segment.negative { background: var(--red-500); }
+.pulse-segment.positive { background: var(--brand-green); }
+.pulse-segment.neutral { background: var(--brand-grey); }
+.pulse-segment.negative { background: var(--brand-risk); }
 
 .pulse-legend {
   display: flex;
@@ -424,9 +443,9 @@ button.secondary:hover {
   display: inline-block;
 }
 
-.pulse-dot.positive { background: var(--green-500); }
-.pulse-dot.neutral { background: var(--slate-300); }
-.pulse-dot.negative { background: var(--red-500); }
+.pulse-dot.positive { background: var(--brand-green); }
+.pulse-dot.neutral { background: var(--brand-grey); }
+.pulse-dot.negative { background: var(--brand-risk); }
 
 /* ---- Dashboard: overview stats ---- */
 

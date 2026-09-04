@@ -20,13 +20,23 @@ Two pages:
 
 ## Design
 
-Built with the `impeccable-design` / `frontend-craft` / `design-tokens` /
-`accessibility-audit` / `emil-design-eng` / `design-taste-frontend` skills:
-a locked slate + burnt-orange OKLCH palette (not the generic "AI dark +
-blue/purple" default), both light and dark mode via `prefers-color-scheme`,
-sentiment shown as text+color badges (never color alone), visible `<label>`
-on every field, and restrained motion tuned for an internal work tool
-(nothing above a ~200ms press/focus transition).
+Uses the real Ameriabank brand palette and fonts, sourced from
+`skills/ameriabank-deck/references/design-system.md` (colours sampled from
+the logo file, not guessed) — brand green `#68BD45`, deep green `#3D8B26`
+for text, near-black `#111111`, pale-green card fill `#EEF6E9`, Cambria for
+headings + Calibri for body (both ship with Office, no font download
+needed). One documented brand rule drives the buttons: green fills take
+near-black text, never white. Light mode is the default (matches the
+brand's own materials); dark mode is the brand's own "dark slide" mode
+(`#111111` background, brand green needs no substitute there), both via
+`prefers-color-scheme`. The logo gets a white backing chip automatically
+in dark mode, since the wordmark's black half would otherwise disappear.
+
+Interaction/motion polish still follows the `impeccable-design` /
+`frontend-craft` / `design-tokens` / `accessibility-audit` /
+`emil-design-eng` / `design-taste-frontend` skills: sentiment shown as
+text+color badges (never color alone), visible `<label>` on every field,
+and restrained motion tuned for an internal work tool.
 
 ## How it works
 
